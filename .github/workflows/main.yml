@@ -1,0 +1,35 @@
+name: Build MR Endless Client
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Find ZIP
+        run: |
+          unzip -q *.zip -d project
+          find project -maxdepth 3 -type f -name "gradlew" -print
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build
+        run: |
+          cd "$(dirname "$(find project -name gradlew -type f | head -1)")"
+          chmod +x gradlew
+          ./gradlew build --no-daemon
+
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: MR-Endless-Client
+          path: "project/**/build/libs/*.jar"
